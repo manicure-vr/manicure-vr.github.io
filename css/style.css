@@ -806,6 +806,11 @@ html { scroll-padding-top: 80px; }
   font-style: italic;
   color: var(--gold-deep);
 }
+/* Цена словами из таблицы, например «бесплатно» */
+.menu__sum--word {
+  font-size: .62em;
+  font-style: italic;
+}
 .menu__note {
   grid-column: 1 / -1;
   margin-top: 3px;
@@ -1015,6 +1020,13 @@ a.contact__big::after { bottom: -1px; }
   font-size: .875rem;
   line-height: 1.45;
 }
+/* График работы из таблицы: каждая строчка ячейки — отдельная строка на сайте */
+.contact__hours {
+  font-family: var(--serif);
+  font-size: 1.125rem;
+  line-height: 1.35;
+  white-space: pre-line;
+}
 .contact__map {
   display: inline-flex;
   align-items: center;
@@ -1039,6 +1051,7 @@ a.contact__big::after { bottom: -1px; }
   .contact__big { font-size: 2rem; }
   .contact__phone { font-size: 1.625rem; }
   .contact__note { font-size: .9375rem; }
+  .contact__hours { font-size: 1.25rem; }
 }
 @media (min-width: 1024px) {
   .contact__list { align-self: center; }

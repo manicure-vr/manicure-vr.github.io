@@ -1,13 +1,19 @@
 /* =========================================================
-   НАСТРОЙКИ САЙТА: все контакты и ссылки здесь.
+   НАСТРОЙКИ САЙТА.
+   Цены, тексты и контакты Виктория меняет в Google Таблице (ссылка в README).
+   Значения ниже — запасные: сайт покажет их, если таблица не откроется.
    Меняйте только текст между кавычками '…'.
    ========================================================= */
 var SETTINGS = {
+  // Google Таблица с ценами, текстами и контактами: её номер из ссылки
+  // docs.google.com/spreadsheets/d/<номер>/edit. Пустые кавычки '' — таблица не используется.
+  sheet: '1zfPmFc4208Ct0cdfrfNAF45_XxgTXNGnjG2EpyzpkpY',
+
   // Группа ВКонтакте
   vk: 'https://vk.ru/club104990443',
 
-  // Max. TODO: вставьте ссылку между кавычками, например 'https://max.ru/…'
-  // Пока здесь пусто, кнопка Max на сайте не показывается.
+  // Max. TODO: ссылки пока нет. Её можно вписать в таблицу (вкладка «Контакты и график»)
+  // или сюда, например 'https://max.ru/…'. Пока пусто, кнопка Max на сайте не показывается.
   max: '',
 
   // Телефон так, как его видно на сайте. Ссылка для звонка соберётся сама.
@@ -19,7 +25,10 @@ var SETTINGS = {
 
   // Дом на Яндекс Картах (ссылка «Открыть на Яндекс Картах» под адресом).
   // Если поставить пустые кавычки '', ссылка пропадёт с сайта.
-  map: 'https://yandex.ru/maps/?pt=29.243711,59.407097&z=17&l=map'
+  map: 'https://yandex.ru/maps/?pt=29.243711,59.407097&z=17&l=map',
+
+  // График работы. Пока пусто, строки «График» на сайте нет.
+  hours: ''
 };
 
 /* =========================================================
@@ -49,28 +58,58 @@ var SETTINGS = {
     return digits.length >= 10 ? 'tel:+' + digits : '';
   }
 
-  var links = {
-    vk: cleanUrl(SETTINGS.vk),
-    max: cleanUrl(SETTINGS.max),
-    map: cleanUrl(SETTINGS.map),
-    phone: phoneHref(SETTINGS.phone)
-  };
+  // Неразрывный пробел после коротких слов («в Большой», «на маникюр»), чтобы они
+  // не оставались в конце строки, и после «д.» и «№»
+  function typo(text) {
+    var s = String(text);
+    for (var i = 0; i < 2; i++) {
+      s = s.replace(/(^|[\s«(„"])([а-яёА-ЯЁa-zA-Z]{1,2}\.?|№)[ \t]+/g, '$1$2 ');
+    }
+    return s;
+  }
 
-  $all('[data-link]').forEach(function (el) {
-    var url = links[el.getAttribute('data-link')];
-    if (url) el.setAttribute('href', url);
-    else if (el.hasAttribute('data-optional')) el.hidden = true;
-  });
+  var links = {};
 
-  $all('[data-text]').forEach(function (el) {
-    var text = SETTINGS[el.getAttribute('data-text')];
-    if (text) el.textContent = String(text).trim();
-  });
+  function applyContacts() {
+    links = {
+      vk: cleanUrl(SETTINGS.vk),
+      max: cleanUrl(SETTINGS.max),
+      map: cleanUrl(SETTINGS.map),
+      phone: phoneHref(SETTINGS.phone)
+    };
 
-  // Max показываем только когда есть настоящая ссылка
-  $all('[data-max-only]').forEach(function (el) {
-    el.hidden = !links.max;
-  });
+    $all('[data-link]').forEach(function (el) {
+      var url = links[el.getAttribute('data-link')];
+      if (url) {
+        el.setAttribute('href', url);
+        if (el.hasAttribute('data-optional')) el.hidden = false;
+      } else if (el.hasAttribute('data-optional')) {
+        el.hidden = true;
+      }
+    });
+
+    $all('[data-text]').forEach(function (el) {
+      var text = String(SETTINGS[el.getAttribute('data-text')] || '').trim();
+      if (text) {
+        el.textContent = typo(text);
+        if (el.hasAttribute('data-optional')) el.hidden = false;
+      } else if (el.hasAttribute('data-optional')) {
+        el.hidden = true;
+      }
+    });
+
+    // Max показываем только когда есть настоящая ссылка
+    $all('[data-max-only]').forEach(function (el) {
+      el.hidden = !links.max;
+    });
+
+    // строка «График» — только когда график вписан
+    $all('[data-hours-row]').forEach(function (el) {
+      el.hidden = !String(SETTINGS.hours || '').trim();
+    });
+  }
+
+  applyContacts();
 
   $all('[data-year]').forEach(function (el) {
     el.textContent = String(new Date().getFullYear());
@@ -78,7 +117,7 @@ var SETTINGS = {
 
   /* ---------- 1а. Данные для поисковиков: телефон, ссылки и цены ---------- */
 
-  (function updateSchema() {
+  function updateSchema() {
     var script = doc.getElementById('ld-json');
     if (!script) return;
     try {
@@ -97,22 +136,276 @@ var SETTINGS = {
         var nameEl = row.querySelector('.menu__name').cloneNode(true);
         $all('.menu__no', nameEl).forEach(function (n) { n.parentNode.removeChild(n); });
         var name = nameEl.textContent.replace(/\s+/g, ' ').trim();
-        var sum = parseInt(row.querySelector('.menu__sum').textContent.replace(/\D/g, ''), 10);
+        var sumEl = row.querySelector('.menu__sum');
+        var sum = sumEl && !sumEl.classList.contains('menu__sum--word')
+          ? parseInt(sumEl.textContent.replace(/\D/g, ''), 10) : NaN;
         var from = !!row.querySelector('.menu__from');
-        if (!isNaN(sum)) prices.push(sum);
         var offer = { '@type': 'Offer', priceCurrency: 'RUB', itemOffered: { '@type': 'Service', name: name } };
-        if (from) offer.priceSpecification = { '@type': 'PriceSpecification', minPrice: sum, priceCurrency: 'RUB' };
-        else offer.price = sum;
+        if (!isNaN(sum)) {
+          prices.push(sum);
+          if (from) offer.priceSpecification = { '@type': 'PriceSpecification', minPrice: sum, priceCurrency: 'RUB' };
+          else offer.price = sum;
+        }
         return offer;
       });
       if (offers.length) {
         data.hasOfferCatalog = { '@type': 'OfferCatalog', name: 'Услуги и цены', itemListElement: offers };
+      }
+      if (prices.length) {
         var fmt = function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); };
-        data.priceRange = fmt(Math.min.apply(null, prices)) + '–' + fmt(Math.max.apply(null, prices)) + ' ₽';
+        var lo = Math.min.apply(null, prices), hi = Math.max.apply(null, prices);
+        data.priceRange = (lo === hi ? fmt(lo) : fmt(lo) + '–' + fmt(hi)) + ' ₽';
       }
       script.textContent = JSON.stringify(data);
     } catch (e) { /* если что-то пошло не так, остаются данные из index.html */ }
-  })();
+  }
+
+  /* ---------- 1б. Цены, тексты, подписи к фото и контакты из Google Таблицы ----------
+     Сайт читает таблицу при каждом открытии. Пока она грузится, показывает то,
+     что видел в прошлый раз (запоминает в браузере), а если таблица не откроется —
+     то, что записано в index.html и в SETTINGS выше. */
+
+  var TABS = {
+    services: { name: 'Услуги', head: 'Услуга' },
+    texts: { name: 'Тексты', head: 'Поле' },
+    photos: { name: 'Фото', head: '№' },
+    contacts: { name: 'Контакты и график', head: 'Поле' }
+  };
+
+  // левый столбик вкладки «Тексты» → место на сайте (data-copy="…")
+  var TEXT_FIELDS = {
+    'Обложка: строка над названием': 'kicker',
+    'Обложка: текст под названием': 'lead',
+    'Обложка: подпись под фото': 'hero-caption',
+    'Цитата': 'quote',
+    'Цены: подзаголовок': 'prices-lead',
+    'Цены: строка под подзаголовком': 'prices-aside',
+    'Работы: подзаголовок': 'works-lead'
+  };
+
+  // левый столбик вкладки «Контакты и график» → SETTINGS; empty: пустая ячейка убирает строку с сайта
+  var CONTACT_FIELDS = {
+    'ВКонтакте': { key: 'vk' },
+    'Max': { key: 'max', empty: true },
+    'Телефон': { key: 'phone' },
+    'Адрес': { key: 'address' },
+    'Как найти вход': { key: 'entrance', empty: true },
+    'Ссылка на карту': { key: 'map', empty: true },
+    'График работы': { key: 'hours', empty: true }
+  };
+
+  var NUMBERS = ['', 'Одна', 'Две', 'Три', 'Четыре', 'Пять', 'Шесть', 'Семь', 'Восемь', 'Девять', 'Десять',
+    'Одиннадцать', 'Двенадцать', 'Тринадцать', 'Четырнадцать', 'Пятнадцать'];
+  var ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+    'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+
+  function servicesPhrase(n) {
+    var a = n % 10, b = n % 100;
+    var word = a === 1 && b !== 11 ? 'услуга' : (a >= 2 && a <= 4 && (b < 12 || b > 14) ? 'услуги' : 'услуг');
+    return (NUMBERS[n] || String(n)) + ' ' + word;
+  }
+
+  function el(tag, cls, text) {
+    var node = doc.createElement(tag);
+    if (cls) node.className = cls;
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  // текст со *звёздочками* → наклонные слова
+  function fill(node, text) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+    String(text).split(/\*([^*]+)\*/).forEach(function (part, i) {
+      if (!part) return;
+      if (i % 2) node.appendChild(el('em', '', typo(part)));
+      else node.appendChild(doc.createTextNode(typo(part)));
+    });
+  }
+
+  function parseCsv(text) {
+    var rows = [], row = [], cell = '', quoted = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charAt(i);
+      if (quoted) {
+        if (c === '"') {
+          if (text.charAt(i + 1) === '"') { cell += '"'; i++; } else quoted = false;
+        } else cell += c;
+      } else if (c === '"') quoted = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text.charAt(i + 1) === '\n') i++;
+        row.push(cell); rows.push(row); row = []; cell = '';
+      } else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  // строки вкладки без заголовка; null, если это не та вкладка
+  function body(rows, tab) {
+    if (!rows || !rows.length || String(rows[0][0] || '').trim() !== tab.head) return null;
+    return rows.slice(1).map(function (r) {
+      return r.map(function (v) { return String(v == null ? '' : v).trim(); });
+    });
+  }
+
+  // «1 200 ₽», «от 2 200 ₽», «бесплатно» → части цены
+  function priceParts(raw) {
+    var s = String(raw).replace(/[\s ]+/g, ' ').trim();
+    var from = /^от\s/i.test(s);
+    var rest = s.replace(/^от\s+/i, '').replace(/\s*(₽|руб(лей|\.)?|р\.)\s*$/i, '').trim();
+    var digits = rest.replace(/\s/g, '');
+    if (/^\d+$/.test(digits)) {
+      return { from: from, sum: digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') };
+    }
+    return { word: s };
+  }
+
+  function buildMenu(rows) {
+    var menu = doc.querySelector('.menu');
+    if (!menu) return 0;
+    // строка попадает на сайт, когда есть название и цена, а в «Показывать» не «нет»
+    var list = rows.filter(function (r) {
+      return r[0] && r[2] && String(r[3] || '').toLowerCase() !== 'нет';
+    });
+    if (!list.length) return 0;   // пустая вкладка — оставляем прежний прайс
+    var frag = doc.createDocumentFragment();
+    list.forEach(function (r, i) {
+      var li = el('li', 'menu__row');
+      var name = el('span', 'menu__name');
+      var no = el('span', 'menu__no', ROMAN[i] || String(i + 1));
+      no.setAttribute('aria-hidden', 'true');
+      name.appendChild(no);
+      // слова в скобках — наклонные, как «(обработка)»
+      r[0].split(/(\([^)]*\))/).forEach(function (part) {
+        if (!part) return;
+        if (part.charAt(0) === '(') name.appendChild(el('em', '', typo(part)));
+        else name.appendChild(doc.createTextNode(typo(part)));
+      });
+      var dots = el('span', 'menu__dots');
+      dots.setAttribute('aria-hidden', 'true');
+      var price = el('span', 'menu__price');
+      var p = priceParts(r[2] || '');
+      if (p.word !== undefined) {
+        price.appendChild(el('span', 'menu__sum menu__sum--word', p.word));
+      } else {
+        if (p.from) {
+          price.appendChild(el('em', 'menu__from', 'от'));
+          price.appendChild(doc.createTextNode(' '));
+        }
+        price.appendChild(el('span', 'menu__sum', p.sum));
+        price.appendChild(el('span', 'menu__cur', '₽'));
+      }
+      li.appendChild(name);
+      li.appendChild(dots);
+      li.appendChild(price);
+      if (r[1]) li.appendChild(el('span', 'menu__note', typo(r[1])));
+      frag.appendChild(li);
+    });
+    while (menu.firstChild) menu.removeChild(menu.firstChild);
+    menu.appendChild(frag);
+    return list.length;
+  }
+
+  // «Пять услуг» в оглавлении и в подзаголовке прайса — по числу строк в прайсе
+  function updateCounts() {
+    var n = $all('.menu__row').length;
+    if (!n) return;
+    var phrase = servicesPhrase(n);
+    $all('[data-count="services"]').forEach(function (node) { node.textContent = phrase; });
+    var lead = doc.querySelector('[data-copy="prices-lead"]');
+    var first = lead && lead.firstChild;
+    if (first && first.nodeType === 3) {
+      first.nodeValue = first.nodeValue.replace(/^(\S+)[\s ]+услуг[аи]?(?=[\s :.,;—–-]|$)/i, function (all, w) {
+        var known = /^\d+$/.test(w) || NUMBERS.some(function (x) { return x && x.toLowerCase() === w.toLowerCase(); });
+        return known ? phrase.replace(' ', ' ') : all;
+      });
+    }
+  }
+
+  function applySheet(data) {
+    if (!data) return;
+
+    var texts = body(data.texts, TABS.texts);
+    if (texts) texts.forEach(function (r) {
+      var key = TEXT_FIELDS[r[0]];
+      if (!key || !r[1]) return;
+      $all('[data-copy="' + key + '"]').forEach(function (node) { fill(node, r[1]); });
+    });
+
+    var services = body(data.services, TABS.services);
+    if (services) buildMenu(services);
+    updateCounts();
+
+    var photos = body(data.photos, TABS.photos);
+    if (photos) photos.forEach(function (r) {
+      var n = parseInt(r[0], 10);
+      if (!(n > 0)) return;
+      var file = 'img/' + (n < 10 ? '0' : '') + n + '.jpg';
+      if (r[1]) $all('[data-shot][href="' + file + '"]').forEach(function (link) {
+        link.setAttribute('data-title', r[1]);
+        var t = link.querySelector('.shot__title');
+        if (t) t.textContent = typo(r[1]);
+      });
+      if (r[2]) $all('img[src="' + file + '"]').forEach(function (img) { img.setAttribute('alt', r[2]); });
+    });
+
+    var contacts = body(data.contacts, TABS.contacts);
+    if (contacts) {
+      contacts.forEach(function (r) {
+        var f = CONTACT_FIELDS[r[0]];
+        if (f && (r[1] || f.empty)) SETTINGS[f.key] = r[1] || '';
+      });
+      applyContacts();
+    }
+
+    updateSchema();
+  }
+
+  var CACHE_KEY = 'manicure-vr-sheet-v1';
+
+  function loadSheet() {
+    var id = String(SETTINGS.sheet || '').trim();
+    if (!id || !window.fetch || !window.Promise) return;
+
+    var cached = null;
+    var saved = {};
+    try { cached = window.localStorage.getItem(CACHE_KEY); } catch (e) { /* браузер не даёт хранить */ }
+    if (cached) {
+      try { saved = JSON.parse(cached) || {}; applySheet(saved); } catch (e) { cached = null; saved = {}; }
+    }
+
+    var keys = Object.keys(TABS);
+    Promise.all(keys.map(function (k) {
+      var url = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(id) +
+        '/gviz/tq?tqx=out:csv&headers=1&sheet=' + encodeURIComponent(TABS[k].name);
+      var timer = null;
+      var timeout = new Promise(function (resolve) { timer = window.setTimeout(function () { resolve(null); }, 10000); });
+      var request = fetch(url, { cache: 'no-store', credentials: 'omit' })
+        .then(function (res) { return res.ok ? res.text() : null; })
+        .then(function (text) { return text ? parseCsv(text) : null; })
+        .catch(function () { return null; });
+      return Promise.race([request, timeout]).then(function (rows) { window.clearTimeout(timer); return rows; });
+    })).then(function (results) {
+      // вкладка, которая сейчас не загрузилась, остаётся такой, как в прошлый раз
+      var data = {};
+      var any = false;
+      keys.forEach(function (k, i) {
+        if (body(results[i], TABS[k])) { data[k] = results[i]; any = true; }
+        else if (saved[k]) data[k] = saved[k];
+      });
+      if (!any) return;
+      var fresh = JSON.stringify(data);
+      if (fresh === cached) return;    // в таблице ничего не поменялось
+      applySheet(data);
+      try { window.localStorage.setItem(CACHE_KEY, fresh); } catch (e) { /* ничего */ }
+      // журнал пересчитает высоту страниц под новый текст
+      window.dispatchEvent(new Event('resize'));
+    });
+  }
+
+  updateSchema();
+  loadSheet();
 
   /* ---------- 2. Если webp-файла нет, показываем jpg ---------- */
 

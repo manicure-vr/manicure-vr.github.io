@@ -74,7 +74,7 @@
     <!-- ========== Первый экран (обложка) ========== -->
     <section class="hero" id="top" aria-labelledby="hero-title">
       <div class="wrap grid hero__grid">
-        <p class="kicker hero__kicker">Приглашаю к&nbsp;себе на&nbsp;маникюр <span class="sep" aria-hidden="true">/</span> Большая Вруда</p>
+        <p class="kicker hero__kicker"><span data-copy="kicker">Приглашаю к&nbsp;себе на&nbsp;маникюр</span> <span class="sep" aria-hidden="true">/</span> Большая Вруда</p>
 
         <h1 class="hero__title" id="hero-title">
           <span class="hero__word">Manicure</span><span class="hero__tail"><span class="slash">/</span><em>VR</em></span>
@@ -87,12 +87,12 @@
               <img src="img/08.jpg" alt="Короткие квадратные ногти: нежно-розовая основа и белый френч. Рука на светлой льняной ткани." width="1067" height="1600" fetchpriority="high" decoding="async">
             </picture>
           </div>
-          <figcaption class="caption"><span class="caption__no">№&nbsp;08</span>Белый френч на&nbsp;коротких квадратных ногтях</figcaption>
+          <figcaption class="caption"><span class="caption__no">№&nbsp;08</span><span data-copy="hero-caption">Белый френч на&nbsp;коротких квадратных ногтях</span></figcaption>
         </figure>
 
         <div class="hero__text">
           <span class="rule" aria-hidden="true"></span>
-          <p class="lead">Маникюр, покрытие, френч и&nbsp;наращивание <em>в&nbsp;Большой Вруде.</em></p>
+          <p class="lead" data-copy="lead">Маникюр, покрытие, френч и&nbsp;наращивание <em>в&nbsp;Большой Вруде.</em></p>
           <div class="actions">
             <a class="btn btn--solid" href="#zapis"><span class="btn__label">Записаться</span><svg class="btn__arrow" viewBox="0 0 26 10" aria-hidden="true"><path d="M0 5h25M20.5 .5 25 5l-4.5 4.5"/></svg></a>
             <a class="btn" href="https://vk.ru/club104990443" data-link="vk" target="_blank" rel="noopener"><span class="btn__label">Мы в ВК</span><svg class="btn__arrow" viewBox="0 0 26 10" aria-hidden="true"><path d="M0 5h25M20.5 .5 25 5l-4.5 4.5"/></svg></a>
@@ -103,7 +103,7 @@
         <nav class="contents" aria-label="В выпуске">
           <p class="kicker contents__label">В выпуске</p>
           <ol class="contents__list">
-            <li><a class="contents__item" href="#ceny"><span class="contents__no">01</span><span class="contents__title"><span class="u-line">Услуги и&nbsp;цены</span></span><span class="contents__desc">Пять услуг</span></a></li>
+            <li><a class="contents__item" href="#ceny"><span class="contents__no">01</span><span class="contents__title"><span class="u-line">Услуги и&nbsp;цены</span></span><span class="contents__desc" data-count="services">Пять услуг</span></a></li>
             <li><a class="contents__item" href="#raboty"><span class="contents__no">02</span><span class="contents__title"><span class="u-line">Работы</span></span><span class="contents__desc">Девять фотографий</span></a></li>
             <li><a class="contents__item" href="#zapis"><span class="contents__no">03</span><span class="contents__title"><span class="u-line">Запись и&nbsp;адрес</span></span><span class="contents__desc">ВКонтакте и&nbsp;телефон</span></a></li>
           </ol>
@@ -117,7 +117,7 @@
         <figure class="quote__fig">
           <span class="quote__mark" aria-hidden="true">«</span>
           <blockquote class="quote__text">
-            <p>Работаю не&nbsp;на&nbsp;количество, а&nbsp;на&nbsp;<em>качество</em>.</p>
+            <p data-copy="quote">Работаю не&nbsp;на&nbsp;количество, а&nbsp;на&nbsp;<em>качество</em>.</p>
           </blockquote>
           <figcaption class="quote__by"><span class="quote__line" aria-hidden="true"></span><span>Мастер Manicure<span class="slash">/</span>VR</span></figcaption>
         </figure>
@@ -140,12 +140,13 @@
                 <div class="page__head">
                   <p class="page__num" aria-hidden="true">01</p>
                   <h2 class="page__title" id="ceny-title">Услуги <em>и&nbsp;цены</em></h2>
-                  <p class="page__lead">Пять услуг: от&nbsp;обработки до&nbsp;наращивания.</p>
-                  <p class="page__aside">Цены указаны в&nbsp;рублях.</p>
+                  <p class="page__lead" data-copy="prices-lead">Пять услуг: от&nbsp;обработки до&nbsp;наращивания.</p>
+                  <p class="page__aside" data-copy="prices-aside">Цены указаны в&nbsp;рублях.</p>
                 </div>
                 <div class="menu-wrap">
                   <p class="menu__cols" aria-hidden="true"><span>Услуга</span><span>Стоимость</span></p>
-                  <!-- ЦЕНЫ: меняйте число внутри <span class="menu__sum">…</span> -->
+                  <!-- ЦЕНЫ берутся из Google Таблицы (см. README). Здесь — запасной вариант,
+                       если таблица не откроется: меняйте число внутри <span class="menu__sum">…</span> -->
                   <ol class="menu">
                     <li class="menu__row">
                       <span class="menu__name"><span class="menu__no" aria-hidden="true">I</span>Маникюр <em>(обработка)</em></span>
@@ -191,7 +192,7 @@
                 <div class="page__head">
                   <p class="page__num" aria-hidden="true">02</p>
                   <h2 class="page__title" id="raboty-title">Работы</h2>
-                  <p class="page__lead">Нюд и&nbsp;френч, неон и&nbsp;матовый градиент.</p>
+                  <p class="page__lead" data-copy="works-lead">Нюд и&nbsp;френч, неон и&nbsp;матовый градиент.</p>
                   <p class="page__aside">Нажмите на&nbsp;фото, чтобы открыть его крупно.</p>
                 </div>
                 <div class="page__collage">
@@ -301,8 +302,15 @@
                   <dt class="kicker">Адрес</dt>
                   <dd>
                     <p class="contact__big" data-text="address">Большая Вруда, д.&nbsp;51</p>
-                    <p class="contact__note" data-text="entrance">Вход со&nbsp;стороны аптеки</p>
+                    <p class="contact__note" data-text="entrance" data-optional>Вход со&nbsp;стороны аптеки</p>
                     <a class="contact__map" href="https://yandex.ru/maps/?pt=29.243711,59.407097&amp;z=17&amp;l=map" data-link="map" data-optional target="_blank" rel="noopener"><span class="u-line">Открыть на&nbsp;Яндекс Картах</span><svg class="btn__arrow" viewBox="0 0 26 10" aria-hidden="true"><path d="M0 5h25M20.5 .5 25 5l-4.5 4.5"/></svg></a>
+                  </dd>
+                </div>
+
+                <div class="contact__row" data-hours-row hidden>
+                  <dt class="kicker">График</dt>
+                  <dd>
+                    <p class="contact__hours" data-text="hours" data-optional></p>
                   </dd>
                 </div>
                 </dl>
