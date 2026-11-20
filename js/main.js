@@ -236,7 +236,7 @@ var SETTINGS = {
       var mobile = window.innerWidth < 720;
       var avail = window.innerHeight - (masthead ? masthead.offsetHeight : 0) -
         (nav ? nav.offsetHeight : 0) - (mobile ? 56 + 44 : 72);
-      var target = Math.max(mobile ? 480 : 540, Math.min(avail, 900));
+      var target = Math.max(mobile ? 480 : 500, Math.min(avail, 900));
       book.style.height = target + 'px';
       var need = 0;
       pages.forEach(function (pg) { need = Math.max(need, pg.scrollHeight); });
@@ -482,7 +482,10 @@ var SETTINGS = {
         turnTo(target, d.dir > 0 ? P : null);
         return;
       }
+      // гасим только щелчок, который браузер может прислать сразу после перетаскивания,
+      // а не следующее нажатие пользователя
       suppressClick = d.moved;
+      if (suppressClick) window.setTimeout(function () { suppressClick = false; }, 350);
       var done = d.dir > 0 ? P.x < W * 0.35 : P.x > -W * 0.35;
       if (cancelled) done = false;
       if (!animated) {
